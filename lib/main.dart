@@ -27,10 +27,6 @@ class MyApp extends StatelessWidget {
 
   "/profile": (context) => ProfileScreen(
     userName: "Dana",
-    allergyIcons: [
-      Icon(Icons.warning, color: Colors.red),
-      Icon(Icons.check, color: Colors.green),
-    ],
   ),
 
   "/menu": (context) => MenuScreen(
@@ -177,10 +173,6 @@ class _BarcodeHomeScreenState extends State<BarcodeHomeScreen> {
                     MaterialPageRoute(
                       builder:(context) => const ProfileScreen(
                       userName: "Dana",
-                      allergyIcons: [
-                        Icon(Icons.warning, color: Colors.red),
-                        Icon(Icons.check, color: Colors.green),
-                      ],
                     ),
                     ),
                     );
@@ -235,12 +227,10 @@ class _BarcodeHomeScreenState extends State<BarcodeHomeScreen> {
 
 class ProfileScreen extends StatelessWidget {
   final String userName;
-  final List<Widget> allergyIcons;
 
 const ProfileScreen({
     super.key,
     required this.userName,
-    required this.allergyIcons,
   });
 
   @override
@@ -319,7 +309,6 @@ const ProfileScreen({
             child: Wrap(
               spacing: 15,
               runSpacing: 15,
-              children: allergyIcons,
             ),
           ),
 
