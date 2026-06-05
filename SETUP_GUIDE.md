@@ -195,12 +195,12 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if request.auth.uid == userId;
     }
-    
+
     // المنتجات للقراءة فقط للمستخدمين المصرح لهم
     match /products/{productId} {
       allow read: if request.auth != null;
     }
-    
+
     // الحساسيات للقراءة فقط
     match /allergies/{allergyId} {
       allow read: if request.auth != null;

@@ -10,45 +10,35 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key,});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-     
       debugShowCheckedModeBanner: false,
-      home: BarcodeHomeScreen(
-        userId: "12345",
-),
+      home: BarcodeHomeScreen(userId: "12345"),
       routes: {
-  "/home": (context) => BarcodeHomeScreen(
-    userId: "12345",
-  ),
+        "/home": (context) => BarcodeHomeScreen(userId: "12345"),
 
-  "/profile": (context) => ProfileScreen(
-    userName: "Dana",
-  ),
+        "/profile": (context) => ProfileScreen(userName: "Dana"),
 
-  "/menu": (context) => MenuScreen(
-    userName: "Dana",
-  ),
+        "/menu": (context) => MenuScreen(userName: "Dana"),
 
-  "/signout": (context) => SignOutDialog(),
+        "/signout": (context) => SignOutDialog(),
 
-  "/safe": (context) => ProductSafeScreen(
-    productName: "productName",
-    companyName: "companyName",
-    ingredients: ["ingredient1", "ingredient2", "ingredient3"],
-  ),
+        "/safe": (context) => ProductSafeScreen(
+          productName: "productName",
+          companyName: "companyName",
+          ingredients: ["ingredient1", "ingredient2", "ingredient3"],
+        ),
 
-  "/danger": (context) => ProductWarningScreen(
-    productName: "productName",
-    companyName: "companyName",
-    ingredients: ["ingredient1", "ingredient2", "ingredient3"],
-    allergicIngredients: ["ingredient1"],
-  ),
-}
-
+        "/danger": (context) => ProductWarningScreen(
+          productName: "productName",
+          companyName: "companyName",
+          ingredients: ["ingredient1", "ingredient2", "ingredient3"],
+          allergicIngredients: ["ingredient1"],
+        ),
+      },
     );
   }
 }
@@ -56,10 +46,7 @@ class MyApp extends StatelessWidget {
 class BarcodeHomeScreen extends StatefulWidget {
   final String userId; // رقم المستخدم لجلب حساسيته
 
-  const BarcodeHomeScreen({
-    Key? key,
-    required this.userId,
-  }) : super(key: key);
+  const BarcodeHomeScreen({super.key, required this.userId});
 
   @override
   State<BarcodeHomeScreen> createState() => _BarcodeHomeScreenState();
@@ -74,45 +61,32 @@ class _BarcodeHomeScreenState extends State<BarcodeHomeScreen> {
     setState(() => isProcessing = true);
 
     try {
-
       // 3) جلب بيانات المنتج من فايربيس
-      var productSnapshot = await FirebaseFirestore.instance
-          .collection("products")
-          .doc(barcodeValue)
-          .get();
+      var productSnapshot = await FirebaseFirestore.instance.collection("products").doc(barcodeValue).get();
 
-          if (!productSnapshot.exists) {
-            setState(() => isProcessing = false);}
+      if (!productSnapshot.exists) {
+        setState(() => isProcessing = false);
+      }
 
       String productName = productSnapshot["name"];
       String companyName = productSnapshot["company"];
-      List<String> ingredients =
-          List<String>.from(productSnapshot["ingredients"]);
+      List<String> ingredients = List<String>.from(productSnapshot["ingredients"]);
 
       // 4) جلب حساسية المستخدم
-      var userSnapshot = await FirebaseFirestore.instance
-          .collection("users")
-          .doc(widget.userId)
-          .get();
+      var userSnapshot = await FirebaseFirestore.instance.collection("users").doc(widget.userId).get();
 
-      List<String> userAllergies =
-          List<String>.from(userSnapshot["allergies"]);
+      List<String> userAllergies = List<String>.from(userSnapshot["allergies"]);
 
       // 5) المقارنة
-      List<String> dangerousIngredients = ingredients
-          .where((item) => userAllergies.contains(item))
-          .toList();
+      List<String> dangerousIngredients = ingredients.where((item) => userAllergies.contains(item)).toList();
 
       // 6) التوجيه
       if (dangerousIngredients.isEmpty) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ProductSafeScreen(
-              productName: productName,
-              companyName: companyName,
-              ingredients: ingredients,
-            ),
+            builder: (_) =>
+                ProductSafeScreen(productName: productName, companyName: companyName, ingredients: ingredients),
           ),
         );
       } else {
@@ -142,14 +116,14 @@ class _BarcodeHomeScreenState extends State<BarcodeHomeScreen> {
       body: Stack(
         children: [
           // الكاميرا
-  MobileScanner(
-  onDetect: (BarcodeCapture capture) {
-    final List<Barcode> barcodes = capture.barcodes;
-    for (final barcode in barcodes) {
-      debugPrint('Barcode found! ${barcode.rawValue}');
-    }
-  },
-),
+          MobileScanner(
+            onDetect: (BarcodeCapture capture) {
+              final List<Barcode> barcodes = capture.barcodes;
+              for (final barcode in barcodes) {
+                debugPrint('Barcode found! ${barcode.rawValue}');
+              }
+            },
+          ),
           // الشريط السفلي الأخضر
           Positioned(
             bottom: 0,
@@ -157,62 +131,62 @@ class _BarcodeHomeScreenState extends State<BarcodeHomeScreen> {
             right: 0,
             child: Container(
               height: 85,
-              decoration: const BoxDecoration(
-                color: Color(0xFF52C47D),
-              ),
+              decoration: const BoxDecoration(color: Color(0xFF52C47D)),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   // زر البروفايل
                   IconButton(
-                    icon: const Icon(Icons.person_rounded,
-                        size: 32, color: Colors.black,),
+                    icon: const Icon(Icons.person_rounded, size: 32, color: Colors.black),
                     onPressed: () {
                       Navigator.push(
                         context,
-                    MaterialPageRoute(
-                      builder:(context) => const ProfileScreen(
-                      userName: "Dana",
-                    ),
-                    ),
-                    );
+                        MaterialPageRoute(builder: (context) => const ProfileScreen(userName: "Dana")),
+                      );
                     },
                   ),
 
                   // زر الكاميرا
-                 GestureDetector(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MobileScanner(
-          onDetect: ( capture) {
-            final List<Barcode> barcodes = capture.barcodes;
-            if (barcodes.isNotEmpty) {
-              final String? code = barcodes.first.rawValue;
-              if (code != null) {
-                Navigator.pop(context); // إغلاق الكاميرا
-                scanProduct(code);      // استدعاء الدالة
-              }
-            }
-          },
-        ),
-      ),
-    );
-  },
-  child: Container(
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white, boxShadow: [
-      BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 6, offset: const Offset(0, 3)),
-    ]),
-    child: const Icon(Icons.camera_alt_rounded, size: 32, color: Colors.black),
-  ),
-),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MobileScanner(
+                            onDetect: (capture) {
+                              final List<Barcode> barcodes = capture.barcodes;
+                              if (barcodes.isNotEmpty) {
+                                final String? code = barcodes.first.rawValue;
+                                if (code != null) {
+                                  Navigator.pop(context); // إغلاق الكاميرا
+                                  scanProduct(code); // استدعاء الدالة
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.camera_alt_rounded, size: 32, color: Colors.black),
+                    ),
+                  ),
 
                   // زر الجرس
                   IconButton(
-                    icon: const Icon(Icons.notifications_none_rounded,
-                        size: 30, color: Colors.black),
+                    icon: const Icon(Icons.notifications_none_rounded, size: 30, color: Colors.black),
                     onPressed: () {},
                   ),
                 ],
@@ -228,10 +202,7 @@ class _BarcodeHomeScreenState extends State<BarcodeHomeScreen> {
 class ProfileScreen extends StatelessWidget {
   final String userName;
 
-const ProfileScreen({
-    super.key,
-    required this.userName,
-  });
+  const ProfileScreen({super.key, required this.userName});
 
   @override
   Widget build(BuildContext context) {
@@ -248,10 +219,7 @@ const ProfileScreen({
             padding: EdgeInsets.only(top: 40, bottom: 30),
             decoration: BoxDecoration(
               color: Color(0xFF52C47D),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(35),
-                bottomRight: Radius.circular(35),
-              ),
+              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(35), bottomRight: Radius.circular(35)),
             ),
             child: Column(
               children: [
@@ -260,8 +228,11 @@ const ProfileScreen({
                     Builder(
                       builder: (context) => IconButton(
                         icon: Icon(Icons.menu_rounded, size: 30, color: Colors.black),
-                        onPressed: () { Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => MenuScreen(userName: "Dana"))); },
+                        onPressed: () {
+                          Navigator.of(
+                            context,
+                          ).push(MaterialPageRoute(builder: (context) => MenuScreen(userName: "Dana")));
+                        },
                       ),
                     ),
                   ],
@@ -272,10 +243,7 @@ const ProfileScreen({
                 Container(
                   width: 95,
                   height: 95,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.4),
-                  ),
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.4)),
                   child: Icon(Icons.person_rounded, size: 60, color: Colors.black54),
                 ),
 
@@ -304,13 +272,7 @@ const ProfileScreen({
 
           SizedBox(height: 15),
 
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24),
-            child: Wrap(
-              spacing: 15,
-              runSpacing: 15,
-            ),
-          ),
+          Padding(padding: EdgeInsets.symmetric(horizontal: 24), child: Wrap(spacing: 15, runSpacing: 15)),
 
           SizedBox(height: 40),
 
@@ -343,19 +305,17 @@ const ProfileScreen({
     );
   }
 }
+
 class MenuScreen extends StatelessWidget {
   final String userName;
 
-  const MenuScreen({
-    super.key,
-    required this.userName,
-  });
+  const MenuScreen({super.key, required this.userName});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-     body: Row(
+      body: Row(
         children: [
           // المستطيل الأبيض الخاص بالمنيو
           Container(
@@ -365,15 +325,12 @@ class MenuScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                
                 // 1) الهيدر الأخضر
                 Container(
                   padding: const EdgeInsets.only(top: 50, bottom: 25, left: 10, right: 10),
                   decoration: const BoxDecoration(
                     color: Color(0xFF52C47D),
-                    borderRadius: BorderRadius.only(
-                      bottomRight: Radius.circular(35),
-                    ),
+                    borderRadius: BorderRadius.only(bottomRight: Radius.circular(35)),
                   ),
                   child: Column(
                     children: [
@@ -390,10 +347,7 @@ class MenuScreen extends StatelessWidget {
                       Container(
                         width: 75,
                         height: 75,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white24,
-                        ),
+                        decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white24),
                         child: const Icon(Icons.person_rounded, size: 45, color: Colors.black54),
                       ),
                       const SizedBox(height: 10),
@@ -428,12 +382,12 @@ class MenuScreen extends StatelessWidget {
                       const Divider(), // خط فاصل جمالي
                       ListTile(
                         leading: const Icon(Icons.logout_rounded, color: Colors.red),
-                        title: const Text("Sign Out", style: TextStyle(fontSize: 16, color: Colors.red, fontWeight: FontWeight.bold)),
+                        title: const Text(
+                          "Sign Out",
+                          style: TextStyle(fontSize: 16, color: Colors.red, fontWeight: FontWeight.bold),
+                        ),
                         onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => const SignOutDialog(),
-                          );
+                          showDialog(context: context, builder: (context) => const SignOutDialog());
                         },
                       ),
                     ],
@@ -442,12 +396,12 @@ class MenuScreen extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // المساحة الشفافة الباقية من الشاشة (إذا ضغط عليها اليوزر يقفل المنيو)
           Expanded(
             child: GestureDetector(
               onTap: () => Navigator.pop(context),
-              child: Container(color: Colors.white.withOpacity(0.3)), // تظليل خفيف جداً خلف المنيو
+              child: Container(color: Colors.white.withValues(alpha: 0.3)), // تظليل خفيف جداً خلف المنيو
             ),
           ),
         ],
@@ -466,9 +420,7 @@ class SignOutDialog extends StatelessWidget {
         // طبقة شفافة
         GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Container(
-            color: Colors.black.withOpacity(0.4),
-          ),
+          child: Container(color: Colors.black.withValues(alpha: 0.4)),
         ),
 
         // مربع تسجيل الخروج الأخضر
@@ -486,11 +438,7 @@ class SignOutDialog extends StatelessWidget {
                 // العنوان
                 Text(
                   "⁠Sign Out?⁠",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
                 ),
 
                 SizedBox(height: 10),
@@ -499,10 +447,7 @@ class SignOutDialog extends StatelessWidget {
                 Text(
                   "Are you sure you want to sign out?⁠",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.black,
-                  ),
+                  style: TextStyle(fontSize: 15, color: Colors.black),
                 ),
 
                 SizedBox(height: 20),
@@ -518,17 +463,11 @@ class SignOutDialog extends StatelessWidget {
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(9),
-                          ),
+                          decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(9)),
                           child: const Center(
                             child: Text(
                               "Sign Out",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,fontSize: 14,
-                              ),
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                             ),
                           ),
                         ),
@@ -536,7 +475,6 @@ class SignOutDialog extends StatelessWidget {
                     ),
 
                     SizedBox(width: 20),
-
 
                     // زر Cancel (أبيض)
                     Expanded(
@@ -546,24 +484,18 @@ class SignOutDialog extends StatelessWidget {
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(9),
-                          ),
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(9)),
                           child: const Center(
                             child: Text(
                               "Cancel",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,fontSize: 14,
-                              ),
+                              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 14),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -574,16 +506,11 @@ class SignOutDialog extends StatelessWidget {
 }
 
 class ProductSafeScreen extends StatelessWidget {
-  final String productName;          // اسم المنتج من الفايربيس
-  final String companyName;          // اسم الشركة من الفايربيس
-  final List<String> ingredients;    // قائمة المكونات
+  final String productName; // اسم المنتج من الفايربيس
+  final String companyName; // اسم الشركة من الفايربيس
+  final List<String> ingredients; // قائمة المكونات
 
-  const ProductSafeScreen({
-    super.key,
-    required this.productName,
-    required this.companyName,
-    required this.ingredients,
-  });
+  const ProductSafeScreen({super.key, required this.productName, required this.companyName, required this.ingredients});
 
   @override
   Widget build(BuildContext context) {
@@ -601,8 +528,7 @@ class ProductSafeScreen extends StatelessWidget {
             child: Row(
               children: [
                 IconButton(
-                  icon: Icon(Icons.arrow_back_ios_new_rounded,
-                      size: 22, color: Colors.black),
+                  icon: Icon(Icons.arrow_back_ios_new_rounded, size: 22, color: Colors.black),
                   onPressed: () {
                     Navigator.pop(context); // يرجع لصفحة الكام
                   },
@@ -614,16 +540,14 @@ class ProductSafeScreen extends StatelessWidget {
           SizedBox(height: 15),
 
           // مستطيل الصورة (بدون لون – بدون أيقونة)
-          Container(
+          SizedBox(
             width: double.infinity,
             height: 360,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(15),
               child: Container(
                 color: Colors.grey[300],
-                child: Center(
-                  child: Icon(Icons.qr_code_scanner, size: 80, color: Colors.grey[700]),
-                ),
+                child: Center(child: Icon(Icons.qr_code_scanner, size: 80, color: Colors.grey[700])),
               ),
             ),
           ),
@@ -633,19 +557,13 @@ class ProductSafeScreen extends StatelessWidget {
           // اسم المنتج
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              productName,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
+            child: Text(productName, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           ),
 
           // اسم الشركة
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              companyName,
-              style: TextStyle(fontSize: 16, color: Colors.black54),
-            ),
+            child: Text(companyName, style: TextStyle(fontSize: 16, color: Colors.black54)),
           ),
 
           SizedBox(height: 15),
@@ -663,10 +581,7 @@ class ProductSafeScreen extends StatelessWidget {
           // عنوان المكونات
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              "INGREDIENTS",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            child: Text("INGREDIENTS", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ),
 
           SizedBox(height: 10),
@@ -680,10 +595,7 @@ class ProductSafeScreen extends StatelessWidget {
                   .map(
                     (item) => Padding(
                       padding: EdgeInsets.only(bottom: 6),
-                      child: Text(
-                        item,
-                        style: TextStyle(fontSize: 16, color: Colors.black),
-                      ),
+                      child: Text(item, style: TextStyle(fontSize: 16, color: Colors.black)),
                     ),
                   )
                   .toList(),
@@ -701,19 +613,10 @@ class ProductSafeScreen extends StatelessWidget {
               children: [
                 Text(
                   "SAFE",
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
                 SizedBox(height: 5),
-                Text(
-                  "Eat it safely",
-                  style: TextStyle(
-                    fontSize: 15,color: Colors.white,
-                  ),
-                ),
+                Text("Eat it safely", style: TextStyle(fontSize: 15, color: Colors.white)),
               ],
             ),
           ),
@@ -722,11 +625,12 @@ class ProductSafeScreen extends StatelessWidget {
     );
   }
 }
+
 class ProductWarningScreen extends StatelessWidget {
   final String productName;
   final String companyName;
-  final List<String> ingredients;          // كل المكونات
-  final List<String> allergicIngredients;  // المكونات اللي المستخدم حساس لها
+  final List<String> ingredients; // كل المكونات
+  final List<String> allergicIngredients; // المكونات اللي المستخدم حساس لها
 
   const ProductWarningScreen({
     super.key,
@@ -752,8 +656,7 @@ class ProductWarningScreen extends StatelessWidget {
             child: Row(
               children: [
                 IconButton(
-                  icon: Icon(Icons.arrow_back_ios_new_rounded,
-                      size: 22, color: Colors.black),
+                  icon: Icon(Icons.arrow_back_ios_new_rounded, size: 22, color: Colors.black),
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -765,15 +668,14 @@ class ProductWarningScreen extends StatelessWidget {
           SizedBox(height: 15),
 
           // صورة المنتج
-          Container(
+          SizedBox(
             width: double.infinity,
             height: 360,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(15),
               child: Container(
-                color:Colors.grey[300],
-                child: Center(
-                  child: Icon(Icons.qr_code_scanner, size:80,color: Colors.grey[700]),)
+                color: Colors.grey[300],
+                child: Center(child: Icon(Icons.qr_code_scanner, size: 80, color: Colors.grey[700])),
               ),
             ),
           ),
@@ -783,19 +685,13 @@ class ProductWarningScreen extends StatelessWidget {
           // اسم المنتج
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              productName,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
+            child: Text(productName, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           ),
 
           // اسم الشركة
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              companyName,
-              style: TextStyle(fontSize: 16, color: Colors.black54),
-            ),
+            child: Text(companyName, style: TextStyle(fontSize: 16, color: Colors.black54)),
           ),
 
           SizedBox(height: 15),
@@ -813,10 +709,7 @@ class ProductWarningScreen extends StatelessWidget {
           // عنوان المكونات
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              "INGREDIENTS",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            child: Text("INGREDIENTS", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ),
 
           SizedBox(height: 10),
@@ -834,12 +727,8 @@ class ProductWarningScreen extends StatelessWidget {
                         item,
                         style: TextStyle(
                           fontSize: 16,
-                          color: allergicIngredients.contains(item)
-                              ? Colors.red
-                              : Colors.black,
-                          fontWeight: allergicIngredients.contains(item)
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                          color: allergicIngredients.contains(item) ? Colors.red : Colors.black,
+                          fontWeight: allergicIngredients.contains(item) ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                     ),
@@ -859,32 +748,19 @@ class ProductWarningScreen extends StatelessWidget {
               children: [
                 Text(
                   "DANGEROUS",
-                  style: TextStyle(
-                    fontSize: 26,fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
 
                 SizedBox(height: 10),
 
-                Text(
-                  "This product contains:",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                ),
+                Text("This product contains:", style: TextStyle(fontSize: 16, color: Colors.white)),
 
                 SizedBox(height: 5),
 
                 // قائمة المكونات الخطيرة
                 Text(
                   allergicIngredients.join(", "),
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold),
                 ),
 
                 SizedBox(height: 15),
@@ -896,11 +772,7 @@ class ProductWarningScreen extends StatelessWidget {
                   },
                   child: Text(
                     "Click here to view safe alternatives",
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.blueAccent,
-                      decoration: TextDecoration.underline,
-                    ),
+                    style: TextStyle(fontSize: 15, color: Colors.blueAccent, decoration: TextDecoration.underline),
                   ),
                 ),
               ],
